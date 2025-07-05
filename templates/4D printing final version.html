@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scalable Deformation Prediction for 4D-Printed Active Composite Structures Based on Explicit Feature Modeling</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2A6BFF;
+      --secondary-color: #00C9A7;
+      --accent-color: #FF6B6B;
+      --bg-color: #F8F9FA;
+      --card-bg: #FFFFFF;
+      --text-primary: #2D3436;
+      --text-secondary: #636E72;
+      --border-color: #E9ECEF;
+      --success: #28A745;
+      --warning: #FFC107;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-color) 30%, #5EB1FF 90%);
+      color: #fff;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      z-index: 10;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    header h1 i {
+      font-size: 2rem;
+      margin-right: 10px;
+    }
+
+    .container {
+      display: flex;
+      height: calc(100vh - 72px);
+      gap: 1px;
+      background: var(--border-color);
+    }
+
+    .column {
+      flex: 1 1 auto;
+      background: var(--card-bg);
+      padding: 1.5rem;
+      overflow-y: auto;
+      min-width: 280px;
+      transition: var(--transition);
+    }
+
+
+    ::-webkit-scrollbar {
+      height: 8px;
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: #ccc;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background-color: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .resizer {
+      flex: 0 0 6px;
+      background: var(--border-color);
+      cursor: col-resize;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .resizer:hover {
+      background: var(--primary-color);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 1rem 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--primary-color);
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin: 1rem 0 0.75rem;
+    }
+
+    h4 {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin: 0.75rem 0 0.5rem;
+    }
+
+    .input-group {
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    label {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      min-width: 60px;
+    }
+
+    input[type="number"] {
+      width: 100px;
+      padding: 0.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 0.95rem;
+      transition: var(--transition);
+    }
+
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(42, 107, 255, 0.15);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.55rem 1.2rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      background: var(--primary-color);
+      color: white;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: var(--text-secondary);
+    }
+
+    .btn-danger {
+      background: var(--accent-color);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .encoding-table {
+      width: 100%;
+      margin: 1rem 0;
+      border-collapse: separate;
+      border-spacing: 2px;
+    }
+
+    .encoding-table td {
+      width: 32px;
+      height: 32px;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: transform 0.1s ease, background-color 0.3s ease;
+      font-weight: 500;
+      user-select: none;
+    }
+
+    .encoding-table td:hover {
+      transform: scale(1.05);
+      background-color: rgba(42, 107, 255, 0.1);
+    }
+
+    .cell-0 {
+      background-color: #77CCC3;
+      color: #fff;
+    }
+
+    .cell-1 {
+      background-color: #E96333;
+      color: #fff;
+    }
+
+    .visualization {
+      background: #FAFAFA;
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin: 1rem 0;
+      border: 1px solid var(--border-color);
+    }
+
+    .visualization img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      margin: 0.5rem 0;
+    }
+
+    @media (max-width: 1200px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .column {
+        min-height: 50vh;
+      }
+
+      .resizer {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>
+      <i class="fas fa-cube fa-spin" style="font-size: 2rem; color: #FFFFFF; margin-right: 10px;"></i>
+      Scalable Deformation Prediction for 4D-Printed Active Composite Structures Based on Explicit Feature Modeling
+    </h1>
+  </header>
+
+  <div class="container" id="container">
+    <!-- Left Column -->
+    <div class="column left-column">
+      <div class="card">
+        <div class="btn-group">
+          <button class="btn btn-danger" onclick="clearLeft()">Clear</button>
+        </div>
+        <h2>1D Prediction</h2>
+
+        <div class="card">
+          <h3>Random encoding</h3>
+          <div class="input-group">
+            <label>Length:</label>
+            <input type="number" id="random-length" min="1" value="10">
+            <button class="btn" onclick="generateRandomCurve()">Predict</button>
+          </div>
+
+          <div class="visualization">
+            <h4>Encoding</h4>
+            <div id="1d-random-grid"><p></p></div>
+          </div>
+
+          <div class="visualization">
+            <h4>Deformation</h4>
+            <div id="1d-random-result"><p></p></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Custom encoding</h3>
+          <div class="input-group">
+            <label>Length:</label>
+            <input type="number" id="custom-length" min="1" value="10">
+            <button class="btn" onclick="generateTable1D()">Create table</button>
+          </div>
+          <div id="custom-table-container-1D"></div>
+          <button class="btn" onclick="submitCustomCurve1D()">Predict</button>
+
+          <div class="visualization">
+            <h4>Deformation</h4>
+            <div id="1d-custom-result"><p></p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="resizer" id="resizer-lm"></div>
+
+    <!-- Middle Column -->
+    <div class="column middle-column">
+      <div class="card">
+        <div class="btn-group">
+          <button class="btn btn-danger" onclick="clearMiddle()">Clear</button>
+        </div>
+        <h2>2D Prediction</h2>
+
+        <div class="card">
+          <h3>Random encoding</h3>
+          <div class="input-group">
+            <label>Number:</label>
+            <input type="number" id="2d-rand-number" min="1" value="3">
+            <label>Length:</label>
+            <input type="number" id="2d-rand-length" min="1" value="5">
+            <button class="btn" onclick="generate2DRandom()">Predict</button>
+          </div>
+
+          <div class="visualization">
+            <h4>Encoding</h4>
+            <div id="2d-random-grid"><p></p></div>
+          </div>
+
+          <div class="visualization">
+            <h4>Deformation</h4>
+            <div id="2d-random-result"><p></p></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Custom encoding</h3>
+          <div class="input-group">
+            <label>Number:</label>
+            <input type="number" id="2d-uniform-number" min="1" value="3">
+            <label>Length:</label>
+            <input type="number" id="2d-uniform-length" min="1" value="5">
+            <button class="btn" onclick="create2DUniformTable()">Create table</button>
+          </div>
+          <div id="uniform-table-container-2D"></div>
+          <button class="btn" onclick="submit2DUniform()">Predict</button>
+
+          <div class="visualization">
+            <h4>Deformation</h4>
+            <div id="2d-uniform-result"><p></p></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Custom encoding and angle</h3>
+          <div class="input-group">
+            <label>Number:</label>
+            <input type="number" id="2d-custom-number" min="1" value="2">
+            <button class="btn" onclick="create2DCustomBlocks()">Create table</button>
+          </div>
+          <div id="2d-custom-container"></div>
+          <button class="btn" onclick="submit2DCustom()">Predict</button>
+
+          <div class="visualization">
+            <h4>Deformation</h4>
+            <div id="2d-custom-result"><p></p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="resizer" id="resizer-mr"></div>
+
+    <!-- Right Column -->
+    <div class="column right-column">
+      <div class="card">
+        <div class="btn-group">
+          <button class="btn btn-danger" onclick="clearRight()">Clear</button>
+        </div>
+        <h2>3D Prediction</h2>
+
+        <div class="card">
+          <h3>Random encoding</h3>
+          <div class="input-group">
+            <label>Number:</label>
+            <input type="number" id="3d-rand-number" min="1" value="3">
+            <label>Length:</label>
+            <input type="number" id="3d-rand-length" min="1" value="5">
+            <button class="btn" onclick="generate3DRandom()">Predict</button>
+          </div>
+
+          <div class="visualization">
+            <h4>Encoding</h4>
+            <div id="threed-random-grid"><p></p></div>
+          </div>
+
+          <div class="visualization" style="height: 400px;">
+            <h4>Deformation</h4>
+            <div id="threed-random-result"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Custom encoding</h3>
+          <div class="input-group">
+            <label>Number:</label>
+            <input type="number" id="3d-uniform-number" min="1" value="3">
+            <label>Length:</label>
+            <input type="number" id="3d-uniform-length" min="1" value="5">
+            <button class="btn" onclick="create3DUniformTable()">Create table</button>
+          </div>
+          <div id="uniform-table-container-3D"></div>
+          <button class="btn" onclick="submit3DUniform()">Predict</button>
+
+          <div class="visualization" style="height: 400px;">
+            <h4>Deformation</h4>
+            <div id="3d-uniform-result"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Custom encoding and angle</h3>
+          <div class="input-group">
+            <label>Number:</label>
+            <input type="number" id="3d-custom-number" min="1" value="2">
+            <button class="btn" onclick="create3DCustomBlocks()">Create table</button>
+          </div>
+          <div id="threed-custom-container"></div>
+          <button class="btn" onclick="submit3DCustom()">Predict</button>
+
+          <div class="visualization" style="height: 400px;">
+            <h4>Deformation</h4>
+            <div id="threed-custom-result"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    // Resizer Logic
+    const container = document.getElementById('container');
+    const leftCol = document.getElementById('left-column');
+    const midCol = document.getElementById('middle-column');
+    const rightCol = document.getElementById('right-column');
+    const resizerLM = document.getElementById('resizer-lm');
+    const resizerMR = document.getElementById('resizer-mr');
+
+    let isDragging = false;
+    let currentResizer = null;
+    let startX = 0;
+    let initLeftW, initMidW, initRightW;
+
+    function mousedown(e, which) {
+      isDragging = true;
+      currentResizer = which;
+      startX = e.clientX;
+      initLeftW = leftCol.offsetWidth;
+      initMidW = midCol.offsetWidth;
+      initRightW = rightCol.offsetWidth;
+      document.addEventListener('mousemove', mousemove);
+      document.addEventListener('mouseup', mouseup);
+    }
+
+    function mousemove(e) {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+
+      if (currentResizer === 'lm') {
+        const newLeft = initLeftW + dx;
+        const newMid = initMidW - dx;
+        if (newLeft < 100 || newMid < 100) return;
+        leftCol.style.flex = `0 0 ${newLeft}px`;
+        midCol.style.flex = `0 0 ${newMid}px`;
+      } else if (currentResizer === 'mr') {
+        const newMid = initMidW + dx;
+        const newRight = initRightW - dx;
+        if (newMid < 100 || newRight < 100) return;
+        midCol.style.flex = `0 0 ${newMid}px`;
+        rightCol.style.flex = `0 0 ${newRight}px`;
+      }
+    }
+
+    function mouseup() {
+      isDragging = false;
+      document.removeEventListener('mousemove', mousemove);
+      document.removeEventListener('mouseup', mouseup);
+    }
+
+    resizerLM.addEventListener('mousedown', e => mousedown(e, 'lm'));
+    resizerMR.addEventListener('mousedown', e => mousedown(e, 'mr'));
+
+    // Clear Functions
+    function clearLeft() {
+      document.getElementById('random-length').value = '10';
+      document.getElementById('1d-random-grid').innerHTML = '<p></p>';
+      document.getElementById('1d-random-result').innerHTML = '<p></p>';
+      document.getElementById('custom-length').value = '10';
+      document.getElementById('custom-table-container-1D').innerHTML = '';
+      document.getElementById('1d-custom-result').innerHTML = '<p></p>';
+    }
+
+    function clearMiddle() {
+      document.getElementById('2d-rand-number').value = '3';
+      document.getElementById('2d-rand-length').value = '5';
+      document.getElementById('2d-random-grid').innerHTML = '<p></p>';
+      document.getElementById('2d-random-result').innerHTML = '<p></p>';
+      document.getElementById('2d-uniform-number').value = '3';
+      document.getElementById('2d-uniform-length').value = '5';
+      document.getElementById('uniform-table-container-2D').innerHTML = '';
+      document.getElementById('2d-uniform-result').innerHTML = '<p></p>';
+      document.getElementById('2d-custom-number').value = '2';
+      document.getElementById('2d-custom-container').innerHTML = '';
+      document.getElementById('2d-custom-result').innerHTML = '<p></p>';
+    }
+
+    function clearRight() {
+      document.getElementById('3d-rand-number').value = '3';
+      document.getElementById('3d-rand-length').value = '5';
+      document.getElementById('threed-random-grid').innerHTML = '<p></p>';
+      document.getElementById('threed-random-result').innerHTML = '';
+      document.getElementById('3d-uniform-number').value = '3';
+      document.getElementById('3d-uniform-length').value = '5';
+      document.getElementById('uniform-table-container-3D').innerHTML = '';
+      document.getElementById('3d-uniform-result').innerHTML = '';
+      document.getElementById('3d-custom-number').value = '2';
+      document.getElementById('threed-custom-container').innerHTML = '';
+      document.getElementById('threed-custom-result').innerHTML = '';
+    }
+
+    // 1D Functions
+    async function generateRandomCurve() {
+      const length = document.getElementById("random-length").value;
+      const response = await fetch('/predict/random', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ length })
+      });
+      const data = await response.json();
+      document.getElementById('1d-random-grid').innerHTML =
+        `<img src="data:image/png;base64,${data.grid_image}" alt="1D Grid">`;
+      document.getElementById('1d-random-result').innerHTML =
+        `<img src="data:image/png;base64,${data.curve_image}" alt="1D Curve">`;
+    }
+
+    function generateTable1D() {
+      const length = document.getElementById("custom-length").value;
+      const container = document.getElementById("custom-table-container-1D");
+      container.innerHTML = "";
+
+      const table = document.createElement("table");
+      table.className = "encoding-table";
+      for (let i = 0; i < 2; i++) {
+        const row = document.createElement("tr");
+        for (let j = 0; j < length; j++) {
+          const cell = document.createElement("td");
+          cell.textContent = "0";
+          cell.className = "cell-0";
+          cell.addEventListener("click", () => toggleCell(cell));
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+      }
+      container.appendChild(table);
+    }
+
+    async function submitCustomCurve1D() {
+      const table = document.querySelector("#custom-table-container-1D table");
+      if (!table) {
+        alert("Please create a table first!");
+        return;
+      }
+
+      const rows = [];
+      for (const row of table.rows) {
+        const rowData = [];
+        for (const cell of row.cells) {
+          rowData.push(parseInt(cell.textContent));
+        }
+        rows.push(rowData);
+      }
+
+      const response = await fetch('/predict/custom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input_code: rows })
+      });
+
+      const data = await response.json();
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+
+      document.getElementById('1d-custom-result').innerHTML =
+        `<img src="data:image/png;base64,${data.curve_image}" alt="1D Curve">`;
+    }
+
+    // 2D Functions
+    async function generate2DRandom() {
+      const number = document.getElementById('2d-rand-number').value;
+      const length = document.getElementById('2d-rand-length').value;
+      const response = await fetch('/predict2D', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ number, length })
+      });
+      const data = await response.json();
+      document.getElementById('2d-random-grid').innerHTML =
+        `<img src="data:image/png;base64,${data.grid_image_2D}" alt="2D Grid">`;
+      document.getElementById('2d-random-result').innerHTML =
+        `<img src="data:image/png;base64,${data.image_2D}" alt="2D Curve">`;
+    }
+
+    function create2DUniformTable() {
+      const lengthVal = parseInt(document.getElementById('2d-uniform-length').value);
+      const container = document.getElementById('uniform-table-container-2D');
+      container.innerHTML = "";
+
+      const table = document.createElement("table");
+      table.className = "encoding-table";
+      for (let r = 0; r < 2; r++) {
+        const row = document.createElement("tr");
+        for (let c = 0; c < lengthVal; c++) {
+          const cell = document.createElement("td");
+          cell.textContent = "0";
+          cell.className = "cell-0";
+          cell.addEventListener("click", () => toggleCell(cell));
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+      }
+      container.appendChild(table);
+    }
+
+    async function submit2DUniform() {
+      const number = parseInt(document.getElementById('2d-uniform-number').value);
+      const lengthVal = parseInt(document.getElementById('2d-uniform-length').value);
+      const table = document.querySelector('#uniform-table-container-2D table');
+
+      if (!table) {
+        alert("Please create the code table first!");
+        return;
+      }
+
+      const uniformCode = [];
+      for (const row of table.rows) {
+        const rowData = [];
+        for (const cell of row.cells) {
+          rowData.push(parseInt(cell.textContent));
+        }
+        uniformCode.push(rowData);
+      }
+
+      const angles = [];
+      const codes = [];
+      for (let i = 0; i < number; i++) {
+        angles.push(i * (360 / number));
+        codes.push(uniformCode);
+      }
+
+      const response = await fetch('/predict2D/uniform', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ angles, codes })
+      });
+
+      const data = await response.json();
+      document.getElementById('2d-uniform-result').innerHTML =
+        `<img src="data:image/png;base64,${data.image_2D}" alt="Uniform 2D Curve">`;
+    }
+
+    function create2DCustomBlocks() {
+      const number = parseInt(document.getElementById('2d-custom-number').value);
+      const container = document.getElementById('2d-custom-container');
+      container.innerHTML = "";
+
+      for (let i = 0; i < number; i++) {
+        const block = document.createElement('div');
+        block.className = 'card';
+        block.innerHTML = `
+          <h4>Encoding ${i + 1}</h4>
+          <div class="input-group">
+            <label>Angle:</label>
+            <input type="number" id="angle-${i}" step="0.1" value="0">
+            <label>Length:</label>
+            <input type="number" id="length-${i}" min="1" value="5">
+            <button class="btn" onclick="create2DCodeTable(${i})">Create table</button>
+          </div>
+          <div id="table-container-2d-${i}"></div>
+        `;
+        container.appendChild(block);
+      }
+    }
+
+    function create2DCodeTable(i) {
+      const lengthVal = parseInt(document.getElementById(`length-${i}`).value);
+      const container = document.getElementById(`table-container-2d-${i}`);
+      container.innerHTML = "";
+
+      const table = document.createElement("table");
+      table.className = "encoding-table";
+      for (let r = 0; r < 2; r++) {
+        const row = document.createElement("tr");
+        for (let c = 0; c < lengthVal; c++) {
+          const cell = document.createElement("td");
+          cell.textContent = "0";
+          cell.className = "cell-0";
+          cell.addEventListener("click", () => toggleCell(cell));
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+      }
+      container.appendChild(table);
+    }
+
+    async function submit2DCustom() {
+      const number = parseInt(document.getElementById('2d-custom-number').value);
+      const angles = [];
+      const codes = [];
+
+      for (let i = 0; i < number; i++) {
+        angles.push(parseFloat(document.getElementById(`angle-${i}`).value) || 0);
+        const table = document.querySelector(`#table-container-2d-${i} table`);
+        if (!table) {
+          alert(`Code ${i + 1}: Please create table first!`);
+          return;
+        }
+
+        const rows = [];
+        for (const row of table.rows) {
+          const rowData = [];
+          for (const cell of row.cells) {
+            rowData.push(parseInt(cell.textContent));
+          }
+          rows.push(rowData);
+        }
+        codes.push(rows);
+      }
+
+      const response = await fetch('/predict2D/custom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ angles, codes })
+      });
+
+      const data = await response.json();
+      document.getElementById('2d-custom-result').innerHTML =
+        `<img src="data:image/png;base64,${data.image_2D}" alt="Custom 2D Curve">`;
+    }
+
+    // 3D Functions
+    async function generate3DRandom() {
+      const number = document.getElementById('3d-rand-number').value;
+      const length = document.getElementById('3d-rand-length').value;
+      const response = await fetch('/predict3D', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ number, length })
+      });
+
+      const data = await response.json();
+      document.getElementById('threed-random-grid').innerHTML =
+        `<img src="data:image/png;base64,${data.grid_image_3D}" alt="3D Grid">`;
+
+      if (data.x && data.y && data.z) {
+        render3DPlotly(data.x, data.y, data.z, 'threed-random-result');
+      }
+    }
+
+    function create3DUniformTable() {
+      const lengthVal = parseInt(document.getElementById('3d-uniform-length').value);
+      const container = document.getElementById('uniform-table-container-3D');
+      container.innerHTML = "";
+
+      const table = document.createElement("table");
+      table.className = "encoding-table";
+      for (let r = 0; r < 2; r++) {
+        const row = document.createElement("tr");
+        for (let c = 0; c < lengthVal; c++) {
+          const cell = document.createElement("td");
+          cell.textContent = "0";
+          cell.className = "cell-0";
+          cell.addEventListener("click", () => toggleCell(cell));
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+      }
+      container.appendChild(table);
+    }
+
+    async function submit3DUniform() {
+      const number = parseInt(document.getElementById('3d-uniform-number').value);
+      const length = parseInt(document.getElementById('3d-uniform-length').value);
+      const table = document.querySelector('#uniform-table-container-3D table');
+
+      if (!table) {
+        alert("Please create the code table first!");
+        return;
+      }
+
+      const uniformCode = [];
+      for (const row of table.rows) {
+        const rowData = [];
+        for (const cell of row.cells) {
+          rowData.push(parseInt(cell.textContent));
+        }
+        uniformCode.push(rowData);
+      }
+
+      const angles = [];
+      const codes = [];
+      for (let i = 0; i < number; i++) {
+        angles.push(i * (360 / number));
+        codes.push(uniformCode);
+      }
+
+      const response = await fetch('/predict3D/uniform', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ angles, codes })
+      });
+
+      const data = await response.json();
+      if (data.x && data.y && data.z) {
+        render3DPlotly(data.x, data.y, data.z, '3d-uniform-result');
+      }
+    }
+
+    function create3DCustomBlocks() {
+      const number = parseInt(document.getElementById('3d-custom-number').value);
+      const container = document.getElementById('threed-custom-container');
+      container.innerHTML = "";
+
+      for (let i = 0; i < number; i++) {
+        const block = document.createElement('div');
+        block.className = 'card';
+        block.innerHTML = `
+          <h4>Encoding ${i + 1}</h4>
+          <div class="input-group">
+            <label>Angle:</label>
+            <input type="number" id="threed-angle-${i}" step="0.1" value="0">
+            <label>Length:</label>
+            <input type="number" id="threed-length-${i}" min="1" value="5">
+            <button class="btn" onclick="create3DCodeTable(${i})">Create table</button>
+          </div>
+          <div id="threed-table-container-${i}"></div>
+        `;
+        container.appendChild(block);
+      }
+    }
+
+    function create3DCodeTable(i) {
+      const lengthVal = parseInt(document.getElementById(`threed-length-${i}`).value);
+      const container = document.getElementById(`threed-table-container-${i}`);
+      container.innerHTML = "";
+
+      const table = document.createElement("table");
+      table.className = "encoding-table";
+      for (let r = 0; r < 2; r++) {
+        const row = document.createElement("tr");
+        for (let c = 0; c < lengthVal; c++) {
+          const cell = document.createElement("td");
+          cell.textContent = "0";
+          cell.className = "cell-0";
+          cell.addEventListener("click", () => toggleCell(cell));
+          row.appendChild(cell);
+        }
+        table.appendChild(row);
+      }
+      container.appendChild(table);
+    }
+
+    async function submit3DCustom() {
+      const number = parseInt(document.getElementById('3d-custom-number').value);
+      const angles = [];
+      const codes = [];
+
+      for (let i = 0; i < number; i++) {
+        angles.push(parseFloat(document.getElementById(`threed-angle-${i}`).value) || 0);
+        const table = document.querySelector(`#threed-table-container-${i} table`);
+        if (!table) {
+          alert(`Code ${i + 1}: Please create table first!`);
+          return;
+        }
+
+        const rows = [];
+        for (const row of table.rows) {
+          const rowData = [];
+          for (const cell of row.cells) {
+            rowData.push(parseInt(cell.textContent));
+          }
+          rows.push(rowData);
+        }
+        codes.push(rows);
+      }
+
+      const response = await fetch('/predict3D/custom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ angles, codes })
+      });
+
+      const data = await response.json();
+      if (data.x && data.y && data.z) {
+        render3DPlotly(data.x, data.y, data.z, 'threed-custom-result');
+      }
+    }
+
+    // Common Functions
+    function toggleCell(cell) {
+      cell.textContent = cell.textContent === "0" ? "1" : "0";
+      cell.className = cell.textContent === "0" ? "cell-0" : "cell-1";
+    }
+
+    function render3DPlotly(x, y, z, targetDiv) {
+      const trace = {
+        x, y, z,
+        mode: 'markers',
+        type: 'scatter3d',
+        marker: { size: 4, color: '#d74a49' },
+        line: { color: 'var(--primary-color)', width: 2 }
+      };
+      // **确保 3 轴刻度比例一致**
+      const xRange = [Math.min(...x), Math.max(...x)];
+      const yRange = [Math.min(...y), Math.max(...y)];
+      const zRange = [Math.min(...z), Math.max(...z)];
+      const maxRange = Math.max(
+      xRange[1] - xRange[0],
+      yRange[1] - yRange[0],
+      zRange[1] - zRange[0]
+      );
+
+      const layout = {
+            margin: { l: 0, r: 0, t: 0, b: 0 },
+            scene: {
+                xaxis: { title: "X(m)", range: [xRange[0], xRange[0] + maxRange] },
+                yaxis: { title: "Y(m)", range: [yRange[0], yRange[0] + maxRange] },
+                zaxis: { title: "Z(m)", range: [zRange[0], zRange[0] + maxRange] },
+                aspectmode: 'cube'
+            }
+        };
+
+      Plotly.newPlot(targetDiv, [trace], layout);
+    }
+
+    // Enhanced Interactions
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('focus', e => {
+        e.target.parentElement.style.borderColor = 'var(--primary-color)';
+      });
+      input.addEventListener('blur', e => {
+        e.target.parentElement.style.borderColor = '';
+      });
+    });
+  </script>
+</body>
+</html>
