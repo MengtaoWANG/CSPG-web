@@ -1,0 +1,1 @@
+This is a deformation prediction platform for 4D-printed active composite structures based on the CSPG algorithm. The required Python libraries include numpy, pandas, scipy, matplotlib, flask, imageio, seaborn, and plotly. To run the platform, execute the app final version.py file. After execution, click the generated URL to access the web-based prediction interface.
